@@ -2311,7 +2311,7 @@ function drawTrendChart(canvas, series, rgb){
    RENDERING — UPLOAD TAB
 ====================================================================== */
 /* Single place to bump the build number. */
-const APP_VERSION = '1.0.12';
+const APP_VERSION = '1.0.14';
 const verEl = document.getElementById('appVersion');
 if(verEl) verEl.textContent = 'Version: ' + APP_VERSION;
 
@@ -2750,7 +2750,7 @@ function buildMatrixTableOnlyPdf(){
     '"Remaining" holds anything not yet mapped to a level.',
     10, y, pw-20, 3.2);
   doc.setFontSize(6.2);
-  doc.text('EPFO RO '+cfg.roName+' \u2014 Claims Pendency Monitoring System Built by DM  \u00b7  generated '+nowDisplay(),
+  doc.text('EPFO RO '+cfg.roName+' \u2014 Claims Pendency Monitoring System Built by Dilip Meena (APFC 2024)  \u00b7  generated '+nowDisplay(),
            10, y+2);
   doc.setTextColor(0,0,0);
 
@@ -3421,7 +3421,7 @@ function addFootersAll(doc, skipFirst){
     doc.line(12,ph-14,pw-12,ph-14);
     doc.setFont('helvetica','italic'); doc.setFontSize(7.5);
     doc.setTextColor.apply(doc,COLORS.slate);
-    doc.text('EPFO RO '+APP.config.roName+' \u2014 Claims Pendency Monitoring System Built by DM', 12, ph-9);
+    doc.text('EPFO RO '+APP.config.roName+' \u2014 Claims Pendency Monitoring System Built by Dilip Meena (APFC 2024)', 12, ph-9);
     doc.text('Page '+(i-start+1)+' of '+(pageCount-start+1), pw-12, ph-9, {align:'right'});
     doc.setTextColor(0,0,0);
   }
