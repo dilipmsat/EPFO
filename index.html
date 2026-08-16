@@ -16,6 +16,11 @@
     --parchment:#F3EEE2;
     --card:#FBF8F1;
     --brass:#B8863E;
+    /* Darker than --brass specifically for small text on light backgrounds --
+       --brass itself is ~3.2:1 on white, short of the 4.5:1 WCAG AA minimum
+       for text this size. Kept separate so the many border/accent uses of
+       --brass (which don't need text-contrast levels) are untouched. */
+    --brass-text:#8C6A2E;
     --slate:#5B6B7C;
     --moss:#4C7A5E;
     --line:#D8D0BE;
@@ -38,6 +43,14 @@
   }
   a{color:var(--ink);}
   .wrap{max-width:1650px;margin:0 auto;padding:0 20px 60px;}
+  /* Buttons and links had no custom focus state at all (only the four .field/
+     .pin-field/.oid-field text inputs did), so keyboard focus visibility relied
+     entirely on the browser's own default outline. :focus-visible keeps this
+     from also drawing on a mouse click, matching how the input focus rings
+     already behave. */
+  .btn:focus-visible, a:focus-visible, button:focus-visible{
+    outline:2px solid var(--brass);outline-offset:2px;
+  }
 
   .ftl-table th{white-space:normal;vertical-align:bottom;line-height:1.2;font-size:9.5px;}
   .ftl-table td, .ftl-table th{padding:5px 8px;}
@@ -375,8 +388,12 @@
     box-shadow:0 -2px 0 var(--brass) inset;
   }
   .tab-btn.active .num{background:var(--maroon);}
-  .tab-btn:disabled{opacity:0.45;cursor:not-allowed;}
-  .tab-btn:not(:disabled):hover{color:var(--ink);}
+  /* [disabled] attribute selector, not :disabled -- the CSS :disabled pseudo-class
+     only matches actual form controls (button/input/select/...), never a <li>, even
+     though the disabled attribute is set on it and the click handler honours it. */
+  .tab-btn[disabled]{opacity:0.45;cursor:not-allowed;}
+  .tab-btn:not([disabled]):hover{color:var(--ink);}
+  .tab-btn:focus-visible{outline:2px solid var(--brass);outline-offset:2px;}
 
   .panel{
     background:var(--card);border:1px solid var(--ink);border-top:none;
@@ -506,7 +523,7 @@
   .lookup-card.death{border-color:var(--maroon);background:#FDF6F6;}
   .lookup-card .lc-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-family:var(--font-mono);}
   .lookup-card .lc-row b{font-size:14px;color:var(--ink);}
-  .lookup-card .lc-days{font-size:11.5px;color:var(--brass);font-weight:700;}
+  .lookup-card .lc-days{font-size:11.5px;color:var(--brass-text);font-weight:700;}
   .lookup-card .lc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px 14px;font-size:12px;}
   .lookup-card .lc-grid div span{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:0.4px;color:var(--slate);}
   .lookup-card .lc-remarks{margin-top:8px;font-size:11.5px;color:var(--slate);font-style:italic;border-top:1px dashed var(--line);padding-top:7px;}
@@ -523,7 +540,9 @@
   table.data td{padding:6px 9px;border-bottom:1px solid var(--line);}
   table.data tr:nth-child(even) td{background:#F7F3E9;}
   table.data tr.death td{color:var(--maroon-dark);font-weight:700;}
-  .table-wrap{border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:22px;}
+  /* overflow-x:auto (not hidden) -- a table wider than its wrap must scroll
+     horizontally on a narrow screen, not silently clip its right-hand columns. */
+  .table-wrap{border:1px solid var(--line);border-radius:8px;overflow-x:auto;overflow-y:hidden;margin-bottom:22px;}
   .table-wrap h4{margin:0;padding:10px 14px;background:#F3EEE2;font-family:var(--font-display);font-size:13px;color:var(--ink);border-bottom:1px solid var(--line);}
 
   .subsection{border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:22px;background:#fff;}
@@ -817,7 +836,7 @@
   .report-card .body{flex:1 1 260px;}
   .report-card .body h4{margin:0 0 2px;font-family:var(--font-display);font-size:14.5px;color:var(--ink);}
   .report-card .body p{margin:0;font-size:12px;color:var(--slate);}
-  .report-card .row-count{font-family:var(--font-mono);font-size:11px;color:var(--brass);margin-top:3px;}
+  .report-card .row-count{font-family:var(--font-mono);font-size:11px;color:var(--brass-text);margin-top:3px;}
   .report-card .ctrls{flex:0 0 auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
   select{
     padding:7px 9px;border:1px solid var(--line);border-radius:6px;font-size:12px;
@@ -894,14 +913,14 @@
 <div id="sessionBar" class="session-bar hidden"></div>
 
 <div class="wrap">
-  <ul class="tabnav">
-    <li class="tab-btn active" data-tab="upload"><span class="num">1</span>Upload Register</li>
-    <li class="tab-btn" data-tab="config" disabled><span class="num">2</span>Configure Thresholds</li>
-    <li class="tab-btn" data-tab="dashboard" disabled><span class="num">3</span>Dashboard</li>
-    <li class="tab-btn" data-tab="custom" disabled><span class="num">4</span>Custom Dashboard</li>
-    <li class="tab-btn" data-tab="reports" disabled><span class="num">5</span>Generate Reports</li>
-    <li class="tab-btn" data-tab="extra"><span class="num">6</span>Performance Reports</li>
-    <li class="tab-btn" data-tab="signatures"><span class="num">7</span>Additional Reports</li>
+  <ul class="tabnav" role="tablist">
+    <li class="tab-btn active" data-tab="upload" role="tab" aria-selected="true" tabindex="0"><span class="num">1</span>Upload Register</li>
+    <li class="tab-btn" data-tab="config" role="tab" aria-selected="false" tabindex="-1" disabled><span class="num">2</span>Configure Thresholds</li>
+    <li class="tab-btn" data-tab="dashboard" role="tab" aria-selected="false" tabindex="-1" disabled><span class="num">3</span>Dashboard</li>
+    <li class="tab-btn" data-tab="custom" role="tab" aria-selected="false" tabindex="-1" disabled><span class="num">4</span>Custom Dashboard</li>
+    <li class="tab-btn" data-tab="reports" role="tab" aria-selected="false" tabindex="-1" disabled><span class="num">5</span>Generate Reports</li>
+    <li class="tab-btn" data-tab="extra" role="tab" aria-selected="false" tabindex="0"><span class="num">6</span>Performance Reports</li>
+    <li class="tab-btn" data-tab="signatures" role="tab" aria-selected="false" tabindex="0"><span class="num">7</span>Additional Reports</li>
   </ul>
 
   <!-- ============ TAB 1: UPLOAD ============ -->
@@ -1029,12 +1048,12 @@
       <h3 class="cfg-h">Office details</h3>
       <div class="cfg-grid">
         <div class="field">
-          <label>Regional Office name <span style="text-transform:none;font-weight:400;color:var(--slate);">(Office Code <span id="cfgOfficeCodeDisplay">&mdash;</span>)</span></label>
+          <label for="cfgRoName">Regional Office name <span style="text-transform:none;font-weight:400;color:var(--slate);">(Office Code <span id="cfgOfficeCodeDisplay">&mdash;</span>)</span></label>
           <input type="text" id="cfgRoName" value="Sangareddy">
           <span class="hint" id="cfgRoNameHint">Printed on every report letterhead</span>
         </div>
         <div class="field">
-          <label>&ldquo;As on&rdquo; date</label>
+          <label for="cfgAsOnDate">&ldquo;As on&rdquo; date</label>
           <input type="date" id="cfgAsOnDate">
           <span class="hint">Auto-detected from Receipt Date + Pending Days in your file</span>
         </div>
@@ -1045,17 +1064,17 @@
       <h3 class="cfg-h">Ageing thresholds <span class="cfg-h-note">each threshold must be larger than the one before it</span></h3>
       <div class="cfg-grid">
         <div class="field">
-          <label>Threshold 1 &mdash; days</label>
+          <label for="cfgTDA">Threshold 1 &mdash; days</label>
           <input type="number" id="cfgTDA" value="7" min="1">
           <span class="hint">Early-warning mark. Claims older than this are the first to chase.</span>
         </div>
         <div class="field">
-          <label>Threshold 2 &mdash; days</label>
+          <label for="cfgT1">Threshold 2 &mdash; days</label>
           <input type="number" id="cfgT1" value="10" min="1">
           <span class="hint">Overdue. Drives the &ldquo;first stage&rdquo; ageing reports.</span>
         </div>
         <div class="field">
-          <label>Threshold 3 &mdash; days</label>
+          <label for="cfgT2">Threshold 3 &mdash; days</label>
           <input type="number" id="cfgT2" value="20" min="1">
           <span class="hint">Critical. Drives the priority reports and red highlighting.</span>
         </div>
@@ -1164,7 +1183,7 @@
       <h4>Quick claim lookup</h4>
       <p class="sub" style="margin:0 0 10px;">Look up any claim in the uploaded register by Claim ID, Member ID, or UAN.</p>
       <div class="lookup-row">
-        <input type="text" id="lookupInput" placeholder="e.g. APHYD260550015512, or a UAN">
+        <input type="text" id="lookupInput" aria-label="Claim ID, Member ID, or UAN" placeholder="e.g. APHYD260550015512, or a UAN">
         <button class="btn small" id="lookupBtn">Search</button>
       </div>
       <div id="lookupResult"></div>
@@ -1573,7 +1592,7 @@
       <button class="drill-close" id="drillClose" title="Close">&times;</button>
     </div>
     <div class="drill-toolbar">
-      <input type="text" id="drillFilter" placeholder="Filter within these claims (Claim ID, Member ID, UAN, status, official)…">
+      <input type="text" id="drillFilter" aria-label="Filter within these claims" placeholder="Filter within these claims (Claim ID, Member ID, UAN, status, official)…">
       <button class="btn small" id="drillCsv">Download CSV</button>
       <button class="btn secondary small" id="drillXls">Download Excel</button>
       <button class="btn secondary small" id="drillPdf">Download PDF</button>
@@ -1767,8 +1786,12 @@ const DA_AGE_BANDS = [
 ];
 
 function bandIndexFor(days, bands){
+  // Must check for null/undefined BEFORE coercing to Number: Number(null) is 0,
+  // not NaN, so a claim with no pendingDays would otherwise silently fall into
+  // whichever band contains 0 (typically "0-3 days") instead of being excluded.
+  if(days==null) return -1;
   const d = Number(days);
-  if(d==null || !Number.isFinite(d)) return -1;
+  if(!Number.isFinite(d)) return -1;
   for(let i=0;i<bands.length;i++){ if(d>=bands[i].min && d<=bands[i].max) return i; }
   return -1;
 }
@@ -2709,7 +2732,10 @@ function buildRecordsFromRows(rows){
     const statusVal = titleTrim(r[colMap.status]);
     if(!statusVal) continue;
     const pdRaw = r[colMap.pendingDays];
-    const pd = Number(pdRaw);
+    // A blank cell reads as '' (defval:'' on the sheet parse), and Number('')===0,
+    // not NaN -- without this check a missing Pending Days value would be recorded
+    // as 0 days pending (landing it in the "0-3" ageing band) instead of unknown.
+    const pd = (pdRaw===''||pdRaw==null) ? NaN : Number(pdRaw);
     const formTypeVal = colMap.formType!==-1 ? String(r[colMap.formType]||'').trim() : '';
     const explicitDeathFlag = colMap.deathCase!==-1 && normalize(r[colMap.deathCase])==='DEATH CASE';
     const form20 = isForm20(formTypeVal), form5if = isForm5IF(formTypeVal), form10d = isForm10D(formTypeVal);
@@ -2816,8 +2842,7 @@ function computeAggregates(records, config){
   const noFoActionRecords   = records.filter(r=>isNoFoAction(r.status));
   const awaitingDecisionRecords = records.filter(r=>r.level==='AUTO/Manual decision');
   const autoQueueRecords    = records.filter(r=>r.level==='AUTO Queue');
-  const deskLevels = ['DA','SS','AO','APFC/RPFC-II','RPFC'];
-  const deskActionableRecords = records.filter(r=>deskLevels.indexOf(r.level)>=0);
+  const deskActionableRecords = records.filter(r=>WORKFLOW_LEVELS.indexOf(r.level)>=0);
   const workload = {
     total: records.length,
     noFoAction: noFoActionRecords.length,
@@ -2970,7 +2995,10 @@ function computeAggregates(records, config){
     if(isEdit){
       o.needEdit++;
     } else if(r.level==='DA'){
-      const bi = bucketizeDaysValue(Number(r.pendingDays));
+      // Pass pendingDays through as-is (not pre-coerced with Number()) so
+      // bandIndexFor's null check can actually see a null value; a DA claim with
+      // no pendingDays belongs in "remaining", not band 0.
+      const bi = bucketizeDaysValue(r.pendingDays);
       if(bi>=0) o.daBuckets[bi]++; else o.remaining++;
     } else if(Object.prototype.hasOwnProperty.call(o.statusCounts, r.level)){
       o.statusCounts[r.level]++;
@@ -3024,8 +3052,11 @@ function computeAggregates(records, config){
   const avgPendingDays = pdVals.length ? (pdVals.reduce((s,v)=>s+v,0)/pdVals.length) : 0;
   const medianPendingDays = pdVals.length ? (pdVals.length%2===1 ? pdVals[(pdVals.length-1)/2] : (pdVals[pdVals.length/2-1]+pdVals[pdVals.length/2])/2) : 0;
 
-  const distinctGroups = groupRollup.length;
-  const distinctTasks = taskRollup.length;
+  // Excludes the '(blank)' rollup entry -- an empty Group/Task ID is not a real
+  // section or task, and counting it would overstate this KPI by one whenever
+  // any record is missing the field.
+  const distinctGroups = groupRollup.filter(g=>g.groupId!=='(blank)').length;
+  const distinctTasks = taskRollup.filter(t=>t.taskId!=='(blank)').length;
 
   const newestReceiptDate = maxRD || null;
   const daysSinceNewest = newestReceiptDate ? Math.floor((new Date().setUTCHours(0,0,0,0) - new Date(newestReceiptDate).setUTCHours(0,0,0,0)) / 86400000) : null;
@@ -3242,7 +3273,7 @@ function drawTrendChart(canvas, series, rgb){
    RENDERING — UPLOAD TAB
 ====================================================================== */
 /* Single place to bump the build number. */
-const APP_VERSION = '1.0.30';
+const APP_VERSION = '1.0.31';
 const verEl = document.getElementById('appVersion');
 if(verEl) verEl.textContent = 'Version: ' + APP_VERSION;
 
@@ -3286,12 +3317,18 @@ function handleFile(file){
         renderOfficeIdentification(resolveOfficeCode(records));
 
         hideSpinner();
-        statusEl.innerHTML = '<div class="status-msg ok"><b>&#10003;</b><div>Parsed <b>'+fmtInt(records.length)+'</b> pending claims from <b>'+file.name+'</b>. Detected header row '+(headerRowIdx+1)+'.</div></div>';
+        statusEl.innerHTML = '<div class="status-msg ok"><b>&#10003;</b><div>Parsed <b>'+fmtInt(records.length)+'</b> pending claims from <b>'+escapeHtml(file.name)+'</b>. Detected header row '+(headerRowIdx+1)+'.</div></div>';
 
         const officeIds = Array.from(new Set(records.map(r=>r.officeId).filter(Boolean)));
         const dates = records.map(r=>r.receiptDate).filter(Boolean);
-        const minDate = dates.length? new Date(Math.min(...dates)) : null;
-        const maxDate = dates.length? new Date(Math.max(...dates)) : null;
+        // Manual min/max loop rather than Math.min(...dates) -- spreading a large
+        // array into Math.min/max risks "Maximum call stack size exceeded" on a
+        // big upload (the same reason computeAggregates's trend calc avoids it).
+        let minDate = null, maxDate = null;
+        for(const d of dates){
+          if(!minDate || d<minDate) minDate = d;
+          if(!maxDate || d>maxDate) maxDate = d;
+        }
 
         document.getElementById('summaryGrid').innerHTML = [
           card('Total pending claims', fmtInt(records.length)),
@@ -3312,7 +3349,7 @@ function handleFile(file){
     });
   }, 40);
 }
-function card(label,val){ return '<div class="mini-card"><div class="lbl">'+label+'</div><div class="val">'+val+'</div></div>'; }
+function card(label,val){ return '<div class="mini-card"><div class="lbl">'+escapeHtml(label)+'</div><div class="val">'+escapeHtml(val)+'</div></div>'; }
 /* ======================================================================
    MULTI-OFFICE UI RENDERING
 ====================================================================== */
@@ -3730,10 +3767,15 @@ document.getElementById('btnResetFile').addEventListener('click', function(){
 ====================================================================== */
 function setTabEnabled(name, enabled){
   const btn = document.querySelector('.tab-btn[data-tab="'+name+'"]');
-  if(enabled) btn.removeAttribute('disabled'); else btn.setAttribute('disabled','disabled');
+  if(enabled){ btn.removeAttribute('disabled'); btn.setAttribute('tabindex','0'); }
+  else { btn.setAttribute('disabled','disabled'); btn.setAttribute('tabindex','-1'); }
 }
 function switchTab(name){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    const active = b.dataset.tab===name;
+    b.classList.toggle('active', active);
+    b.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('hidden', p.id!=='tab-'+name));
 }
 document.querySelectorAll('.tab-btn').forEach(function(btn){
@@ -3745,6 +3787,11 @@ document.querySelectorAll('.tab-btn').forEach(function(btn){
     if(name==='custom' && APP.agg) renderCustomDashboard();
     if(name==='reports' && APP.agg) renderReportCards();
     switchTab(name);
+  });
+  // <li> has no native keyboard activation (unlike <button>/<a>), so Enter/Space
+  // must be wired by hand to make the tab strip usable without a mouse.
+  btn.addEventListener('keydown', function(e){
+    if(e.key==='Enter' || e.key===' '){ e.preventDefault(); btn.click(); }
   });
 });
 document.getElementById('btnToConfig').addEventListener('click', function(){
@@ -4595,9 +4642,9 @@ const statusLevelItems = Object.entries(agg.levelCounts).sort((a,b)=>b[1]-a[1]).
   const to = document.getElementById('tableOldest');
   to.querySelector('thead').innerHTML = '<tr><th>Claim ID</th><th>Task ID</th><th>Form Type</th><th>Receipt Date</th><th>Days</th><th>Status</th></tr>';
   to.querySelector('tbody').innerHTML = safeArr(agg.oldestClaims).map(r=>
-    '<tr class="'+(r.isDeathCase?'death':'')+'"><td>'+r.claimId+'</td>'+
-    '<td><span class="drill-link" data-drill="task" data-key="'+escapeHtml(r.accTaskId)+'">'+r.accTaskId+'</span></td>'+
-    '<td>'+r.formType+'</td><td>'+fmtDateDisplay(r.receiptDate)+'</td><td>'+r.pendingDays+'</td><td>'+r.status+(r.isDeathCase?' &middot; <span class="flag-death">DEATH CASE</span>':'')+'</td></tr>'
+    '<tr class="'+(r.isDeathCase?'death':'')+'"><td>'+escapeHtml(r.claimId)+'</td>'+
+    '<td><span class="drill-link" data-drill="task" data-key="'+escapeHtml(r.accTaskId)+'">'+escapeHtml(r.accTaskId)+'</span></td>'+
+    '<td>'+escapeHtml(r.formType)+'</td><td>'+fmtDateDisplay(r.receiptDate)+'</td><td>'+r.pendingDays+'</td><td>'+escapeHtml(r.status)+(r.isDeathCase?' &middot; <span class="flag-death">DEATH CASE</span>':'')+'</td></tr>'
   ).join('');
 
   // status table
@@ -4898,14 +4945,14 @@ function doLookup(){
   const shown = matches.slice(0,8);
   resultEl.innerHTML = shown.map(function(r){
     return '<div class="lookup-card'+(r.isDeathCase?' death':'')+'">'+
-      '<div class="lc-row"><b>'+r.claimId+'</b><span class="lc-days">'+r.pendingDays+' days pending</span></div>'+
+      '<div class="lc-row"><b>'+escapeHtml(r.claimId)+'</b><span class="lc-days">'+r.pendingDays+' days pending</span></div>'+
       '<div class="lc-grid">'+
-        '<div><span>Task ID</span>'+r.accTaskId+'</div>'+
-        '<div><span>Status</span>'+r.status+'</div>'+
-        '<div><span>Form Type</span>'+r.formType+'</div>'+
+        '<div><span>Task ID</span>'+escapeHtml(r.accTaskId)+'</div>'+
+        '<div><span>Status</span>'+escapeHtml(r.status)+'</div>'+
+        '<div><span>Form Type</span>'+escapeHtml(r.formType)+'</div>'+
         '<div><span>Receipt Date</span>'+fmtDateDisplay(r.receiptDate)+'</div>'+
-        '<div><span>Member ID</span>'+r.memberId+'</div>'+
-        '<div><span>UAN</span>'+(r.uan||'—')+'</div>'+
+        '<div><span>Member ID</span>'+escapeHtml(r.memberId)+'</div>'+
+        '<div><span>UAN</span>'+escapeHtml(r.uan||'—')+'</div>'+
       '</div>'+
       (r.remarks? '<div class="lc-remarks">'+escapeHtml(r.remarks)+'</div>' : '')+
       (r.isDeathCase? '<div class="flag-death">DEATH CASE — priority handling</div>' : '')+
@@ -5988,8 +6035,10 @@ function getCustomDataset(typeOverride, rawOverride){
     if(r.pendingDays!=null && r.pendingDays > o.oldest) o.oldest = r.pendingDays;
   });
   const taskRollup = Array.from(taskMap.values()).map(o=>{
-    const rows = sorted.filter(r=>String(r.accTaskId||'').trim()===o.taskId);
-    o.avg = Math.round(rows.reduce((s,r)=>s+(Number(r.pendingDays)||0),0)/rows.length);
+    // Reuse the rows already collected into o.allRows above, rather than
+    // re-scanning `sorted` for every distinct Task ID (this ran on every
+    // keystroke in the Custom Dashboard's ID box, so the re-filter was O(n^2)).
+    o.avg = Math.round(o.allRows.reduce((s,r)=>s+(Number(r.pendingDays)||0),0)/o.allRows.length);
     return o;
   }).sort((a,b)=>b.total-a.total || b.oldest-a.oldest);
 
@@ -6855,12 +6904,11 @@ function drawComprehensiveMatrixTable(doc, y, mx){
 
 function buildMatrixDoc(groupFilter, doableFilter, existingDoc){
   const cfg = APP.config;
-  const deskLevels = ['DA','SS','AO','APFC/RPFC-II','RPFC'];
   let rows = safeArr(APP.records);
   const labelParts = [];
   if(groupFilter && groupFilter!=='ALL'){ rows = rows.filter(r=>r.accGroupId===groupFilter); labelParts.push('Group ID '+groupFilter); }
-  if(doableFilter==='DOABLE'){ rows = rows.filter(r=>deskLevels.indexOf(r.level)>=0); labelParts.push('doable claims only'); }
-  else if(doableFilter==='NOT_DOABLE'){ rows = rows.filter(r=>deskLevels.indexOf(r.level)<0); labelParts.push('not-doable claims only'); }
+  if(doableFilter==='DOABLE'){ rows = rows.filter(r=>WORKFLOW_LEVELS.indexOf(r.level)>=0); labelParts.push('doable claims only'); }
+  else if(doableFilter==='NOT_DOABLE'){ rows = rows.filter(r=>WORKFLOW_LEVELS.indexOf(r.level)<0); labelParts.push('not-doable claims only'); }
   const scoped = labelParts.length>0;
   const agg = scoped ? computeAggregates(rows, cfg) : APP.agg;
   const mx = agg.matrix || {daBuckets:[], categories:[], rows:[]};
